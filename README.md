@@ -4,5 +4,4 @@ as the name suggests, it is a captcha solver for poketwo. the code is pretty scu
 one major flaw with this program is that it requires the opened chrome window to be the active window for solving the captcha (since it sends keystrokes)
 
 plans for the future:
-fix the flaw
-\n introduce headless mode
+fix the flaw and introduce headless mode
