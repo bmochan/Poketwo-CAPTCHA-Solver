@@ -17,13 +17,14 @@ import speech_recognition as sr
 def SolveCaptcha(url: str) -> bool:
     # Defining chrome options
     chrome_options = Options()
-    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-    
+    chrome_options.add_argument(
+        '--disable-blink-features=AutomationControlled')
+
     # Initialising chrome
     chrome = uc.Chrome(browser_executable_path="C:\Program Files\Google\Chrome\Application\chrome.exe",
                        use_subprocess=True, chrome_options=chrome_options)
-    chrome.set_window_size(1920, 1080)
-    chrome.maximize_window()
+    # chrome.set_window_size(1920, 1080)
+    # chrome.maximize_window()
 
     # Redirecting to URL
     chrome.get(url)
@@ -42,7 +43,7 @@ def SolveCaptcha(url: str) -> bool:
 
         time.sleep(2)
 
-        # Click the captcha
+        # Click the CAPTCHA
         captcha.click()
 
         chrome.switch_to.default_content()
@@ -101,8 +102,23 @@ def SolveCaptcha(url: str) -> bool:
         input_box.send_keys(Keys.ENTER)
 
     except Exception:
-        chrome.close()
-        return False
+        # Check if CAPTCHA has already been solved
+        checkmark_selector = '#recaptcha-anchor > div.recaptcha-checkbox-checkmark'
+
+        try:
+            # Wait for CAPTCHA iframe to be visible
+            WebDriverWait(chrome, 20).until(EC.frame_to_be_available_and_switch_to_it(
+                (By.CSS_SELECTOR, "iframe[title='reCAPTCHA']")))
+            WebDriverWait(chrome, 10).until(EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, checkmark_selector)))
+
+            # No errors, so CAPTCHA is solved
+            chrome.close()
+            return True
+
+        except Exception:
+            chrome.close()
+            return False
 
     # Get fail text; successful operation otherwise
     try:
@@ -123,11 +139,14 @@ def SolveCaptcha(url: str) -> bool:
 
         verify_btn = chrome.find_element(By.TAG_NAME, "button")
 
-        time.sleep(2)        
+        time.sleep(2)
 
         # Finally, click the verify button
         verify_btn.click()
 
+        chrome.close()
+
+        time.sleep(5)
         return True
 
 
@@ -136,3 +155,5 @@ async def solve(url: str) -> None:
 
     while solved == False:
         solved = SolveCaptcha(url)
+
+    return
